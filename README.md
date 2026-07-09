@@ -51,32 +51,37 @@
 
 #### 1. 克隆或下载本项目
 
-```bash
+bash
 git clone <repository-url>
 cd yolo_project# report
 
-2. 创建并激活 conda 虚拟环境
+
+#### 2. 创建并激活 conda 虚拟环境
 bash
 conda create -n yolov8 python=3.8 -y
 conda activate yolov8
-3. 配置 pip 国内镜像源（加速下载）
+
+#### 3. 配置 pip 国内镜像源（加速下载）
 bash
 pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
-4. 安装 PyTorch（CPU 版）
+
+#### 4. 安装 PyTorch（CPU 版）
 bash
 conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 cpuonly -c pytorch
 如有 NVIDIA GPU，可替换为 GPU 版：
 
 bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-5. 安装 Ultralytics
+
+#### 5. 安装 Ultralytics
 bash
 pip install ultralytics
-6. 验证安装
+
+#### 6. 验证安装
 bash
 yolo predict model=yolov8n.pt source=https://ultralytics.com/images/bus.jpg
 
-目录结构
+### 目录结构
 text
 yolo_project/
 │
@@ -99,8 +104,9 @@ yolo_project/
 └── README.md                         # 本文件
 注意：模型权重文件（.pt）体积较大，不纳入版本管理。各脚本训练完成后会自动保存至 runs/ 目录
 
-运行方法
-1. 准备数据集
+### 运行方法
+
+#### 1. 准备数据集
 将 NEU-DET 数据集解压至项目根目录下的 NEU-DET/ 文件夹，确保 data.yaml 中的路径配置正确：
 
 yaml
@@ -109,21 +115,26 @@ train: train/images
 val: valid/images
 nc: 6
 names: ['crazing', 'inclusion', 'patches', 'pitted_surface', 'rolled-in_scale', 'scratches']
-2. 训练教师模型（YOLOv8m）
+
+#### 2. 训练教师模型（YOLOv8m）
 bash
 python train_teacher.py
-3. 训练学生基线（YOLOv8n）
+
+#### 3. 训练学生基线（YOLOv8n）
 python
 from ultralytics import YOLO
 model = YOLO('yolov8n.pt')
 model.train(data='NEU-DET/data.yaml', imgsz=416, epochs=50, device='cpu')
-4. 知识蒸馏训练
+
+#### 4. 知识蒸馏训练
 bash
 python train_distill.py
-5. 结构化剪枝
+
+#### 5. 结构化剪枝
 bash
 python prune.py
-6. 评估模型精度
+
+#### 6. 评估模型精度
 bash
 # 评估任意模型
 yolo val model=runs/detect/train/weights/best.pt data=NEU-DET/data.yaml imgsz=416 plots=False
@@ -137,7 +148,7 @@ Pruned 0.3	416×416	0.754	0.436	1.04	1.68	43.01
 Pruned 0.5	416×416	0.783	0.440	0.73	1.06	50.94
 Pruned 0.3	640×640	0.794	0.483	2.46	1.68	22.02
 Pruned 0.5	640×640	0.804	0.451	1.72	1.06	34.96
-核心结论
+# 核心结论
 输入分辨率权衡：640×640 精度更高（+0.008 mAP），但 FPS 约为 416×416 的 1/3，需按场景取舍。
 
 知识蒸馏有效：640×640 下蒸馏后 mAP（0.836）超越基线（0.835），参数量不变，验证了“零成本”精度提升的可行性。
@@ -146,7 +157,7 @@ Pruned 0.5	640×640	0.804	0.451	1.72	1.06	34.96
 
 综合最优：精度优先选 640×640 蒸馏模型；速度优先选 416×416 剪枝 0.5；平衡方案选 640×640 剪枝 0.5。
 
-组员分工
+### 组员分工
 成员	主要职责
 刘宇欣	环境搭建、NEU-DET 数据集准备与预处理、416/640 双分辨率基线模型训练
 刘紫涵	知识蒸馏全流程设计与实现（416/640 双分辨率蒸馏实验、超参数调优）
@@ -154,14 +165,14 @@ Pruned 0.5	640×640	0.804	0.451	1.72	1.06	34.96
 王芯	评估框架搭建（mAP/FLOPs/参数量/FPS 计算、混淆矩阵与可视化分析）
 李钰	报告撰写、PPT 制作
 
-项目信息
+### 项目信息
 课程：人工智能基础（2025-2026 春季学期）
 
 授课教师：王君教授（四川大学电子信息学院）
 
 题目：题目五 - 轻量级实时目标检测优化（5C 组：工业场景缺陷检测）
 
-参考资料
+# 参考资料
 Ultralytics YOLOv8 官方文档
 
 NEU-DET 数据集
@@ -169,3 +180,4 @@ NEU-DET 数据集
 Hinton, G., Vinyals, O., & Dean, J. (2015). Distilling the Knowledge in a Neural Network. NIPS 2014 Workshop.
 
 Liu, Z., et al. (2017). Learning Efficient Convolutional Networks through Network Slimming. ICCV 2017.
+
